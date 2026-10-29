@@ -1,0 +1,1 @@
+"""Standalone retrieval-augmented generation foundation for OpsPilot."""
