@@ -1,0 +1,19 @@
+services:
+  rag-llm:
+    build:
+      context: .
+      dockerfile: Dockerfile.rag-llm
+    ports:
+      - "8010:8010"
+    environment:
+      HF_HOME: /models
+      OPSPILOT_LOGS_DB_DIR: /data/storage/openssh_logs
+      OPSPILOT_DOCS_DB_DIR: /data/storage/openssh_docs
+      OPSPILOT_EMBEDDING_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      OPSPILOT_LLM_MODEL: google/flan-t5-small
+    volumes:
+      - opspilot-model-cache:/models
+      - ./storage:/data/storage
+
+volumes:
+  opspilot-model-cache:
