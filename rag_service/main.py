@@ -23,6 +23,7 @@ DEFAULT_DOCS_DB_DIR = Path("storage/openssh_docs")
 
 class AnalysisRequest(BaseModel):
     query: str = Field(min_length=1)
+    raw_logs: str | None = Field(default=None, max_length=20_000)
     log_k: int = Field(default=5, ge=1, le=50)
     documentation_k: int = Field(default=5, ge=1, le=50)
     max_new_tokens: int = Field(default=256, ge=1, le=2048)
@@ -70,12 +71,23 @@ class RagLlmService:
         )
 
     def build_prompt(
-        self, query: str, *, log_k: int, documentation_k: int
+        self,
+        query: str,
+        *,
+        log_k: int,
+        documentation_k: int,
+        user_logs: str | None = None,
     ) -> tuple[str, list[Any], list[Any]]:
         logs, documentation = self.retrieve(
             query, log_k=log_k, documentation_k=documentation_k
         )
-        return build_incident_prompt(query, logs, documentation), logs, documentation
+        return (
+            build_incident_prompt(
+                query, logs, documentation, user_logs=user_logs
+            ),
+            logs,
+            documentation,
+        )
 
 
 def _setting(name: str, default: str) -> str:
@@ -198,6 +210,7 @@ def create_app(
             payload.query,
             log_k=payload.log_k,
             documentation_k=payload.documentation_k,
+            user_logs=payload.raw_logs,
         )
         return {
             "query": payload.query,

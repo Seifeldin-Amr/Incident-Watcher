@@ -186,14 +186,23 @@ def build_incident_prompt(
     query: str,
     log_results: Sequence[RetrievedChunk],
     documentation_results: Sequence[RetrievedChunk],
+    *,
+    user_logs: str | None = None,
 ) -> str:
     """Build the evidence-grounded prompt passed to the incident-analysis LLM."""
+    user_log_context = (
+        f"USER-PROVIDED LOGS\n{user_logs.strip()}\n\n"
+        if user_logs and user_logs.strip()
+        else ""
+    )
     return (
         "You are an incident investigator specializing in OpenSSH.\n"
         "Analyze the user's incident using only the supplied context.\n"
         "Historical logs are examples of past events, not proof of the cause of "
-        "the current incident. Do not invent facts, root causes, configuration "
-        "values, commands, or citations.\n\n"
+        "the current incident. Treat USER-PROVIDED LOGS as evidence for this "
+        "incident; retrieved historical logs are examples from other incidents, "
+        "not evidence for this one. Do not invent facts, root causes, "
+        "configuration values, commands, or citations.\n\n"
         "Required response structure:\n"
         "1. Summary: briefly describe the reported problem.\n"
         "2. Confirmed observations: cite relevant log evidence and distinguish "
@@ -211,9 +220,10 @@ def build_incident_prompt(
         "7. Evidence gaps: state clearly what cannot be concluded.\n"
         "8. Sources: list the source URL and record ID or filename for every "
         "material claim.\n\n"
-        "Use 'not confirmed' when the context is insufficient. Do not treat a "
-        "similar historical event as confirmation of the current root cause.\n\n"
+        "Use 'not confirmed' when the context is insufficient. Do not treat "
+        "historical examples as confirmation of the current root cause.\n\n"
         f"USER QUERY\n{query}\n\n"
+        f"{user_log_context}"
         f"{format_incident_context(log_results, documentation_results)}"
     )
 

@@ -94,6 +94,21 @@ Open <http://127.0.0.1:8010/docs>. The service provides:
 - `POST /v1/generate` to test the LLM with a supplied prompt.
 - `POST /v1/analyze` to run retrieval, prompt construction, and generation.
 
+For `/v1/analyze`, `query` describes the question and optional `raw_logs`
+contains the log lines for this incident. Submitted logs are included directly
+as incident evidence; retrieved historical logs are labeled as examples only.
+For example:
+
+```json
+{
+  "query": "Analyze these SSH login attempts and identify failed logins.",
+  "raw_logs": "Nov 25 19:42:11 server sshd[28104]: Failed password for invalid user admin from 203.0.113.42 port 52318 ssh2",
+  "log_k": 5,
+  "documentation_k": 5,
+  "max_new_tokens": 180
+}
+```
+
 Run the RAG/LLM service in Docker when Docker Desktop is installed:
 
 ```powershell
